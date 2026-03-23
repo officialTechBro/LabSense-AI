@@ -9,6 +9,7 @@ In this phase, build the sidebar structure, navigation links, user profile area,
 ## Requirements for phase 2
 
 - Collapsible Left sidebar matching the design
+- Change the themes to Dark mode and add a dark mode toggle to toggle dark/light mode
 - Brand area at the top with:
   - LabSense logo/avatar block
   - product name `LabSense`
