@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FilePlus, TrendingUp, Settings, X } from "lucide-react";
+import { LayoutDashboard, FilePlus, TrendingUp, FileText, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockUser } from "@/lib/mock-data";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Reports", href: "/dashboard/reports", icon: FileText },
   { label: "New Report", href: "/dashboard/new", icon: FilePlus },
   { label: "Trends", href: "/dashboard/trends", icon: TrendingUp },
 ];
