@@ -44,6 +44,8 @@ export type Report = {
   borderlineCount: number;
   flaggedCount: number;
   aiSummary: string;
+  aiRecommendations: Recommendation[];
+  otcRecommendations: string[];
   results: LabResult[];
 };
 
@@ -58,6 +60,18 @@ export const mockReports: Report[] = [
     flaggedCount: 1,
     aiSummary:
       "Most of your results are within normal range. Your cholesterol is slightly elevated and your fasting glucose is above the recommended threshold — both worth discussing with your doctor.",
+    aiRecommendations: [
+      { id: "r1_rec_1", title: "Elevated Fasting Glucose", description: "Your fasting glucose of 102 mg/dL is above the normal threshold. Consider discussing dietary changes and a follow-up glucose test with your doctor.", priority: "warning" },
+      { id: "r1_rec_2", title: "LDL Cholesterol Borderline", description: "LDL at 128 mg/dL exceeds the recommended level. A heart-healthy diet low in saturated fats may help reduce this over time.", priority: "warning" },
+      { id: "r1_rec_3", title: "Low Vitamin D", description: "Your Vitamin D level of 18 ng/mL is below the recommended range. Sun exposure and supplementation are commonly suggested.", priority: "info" },
+    ],
+    otcRecommendations: [
+      "Consider a Vitamin D3 supplement (1,000–2,000 IU/day) to address low Vitamin D levels.",
+      "Reduce saturated fat intake to help lower LDL cholesterol.",
+      "Aim for 30 minutes of moderate exercise at least 5 days a week.",
+      "Limit refined carbohydrates and sugary drinks to help manage fasting glucose.",
+      "Monitor blood pressure weekly using a home cuff.",
+    ],
     results: [
       {
         id: "r1_1",
@@ -167,6 +181,16 @@ export const mockReports: Report[] = [
     flaggedCount: 0,
     aiSummary:
       "Follow-up results show some borderline values. Your LDL and fasting glucose remain slightly elevated. No urgent concerns, but continued monitoring is recommended.",
+    aiRecommendations: [
+      { id: "r2_rec_1", title: "LDL Still Elevated", description: "LDL has increased slightly to 132 mg/dL since your last report. A dietary and lifestyle review with your doctor is recommended.", priority: "warning" },
+      { id: "r2_rec_2", title: "Glucose Monitoring Advised", description: "Fasting glucose at 105 mg/dL remains above normal. Regular home monitoring and reduced sugar intake are advised.", priority: "info" },
+    ],
+    otcRecommendations: [
+      "Increase dietary fiber (oats, beans, flaxseed) to help reduce LDL over time.",
+      "Consider omega-3 fish oil supplements to support cardiovascular health.",
+      "Track fasting glucose at home and log readings before your next visit.",
+      "Avoid late-night meals to help stabilize blood sugar levels.",
+    ],
     results: [
       {
         id: "r2_1",
@@ -244,6 +268,14 @@ export const mockReports: Report[] = [
     flaggedCount: 0,
     aiSummary:
       "All liver function markers are within normal range. No concerns detected. Routine monitoring is sufficient.",
+    aiRecommendations: [
+      { id: "r3_rec_1", title: "Liver Function Normal", description: "All markers including ALT, AST, and Bilirubin are within healthy range. Continue current lifestyle habits.", priority: "info" },
+    ],
+    otcRecommendations: [
+      "Stay well hydrated — aim for 8 glasses of water daily to support liver function.",
+      "Limit alcohol consumption to maintain healthy liver enzyme levels.",
+      "Include cruciferous vegetables (broccoli, cauliflower) in your diet to support liver health.",
+    ],
     results: [
       {
         id: "r3_1",
