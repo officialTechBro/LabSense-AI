@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── App Models ───────────────────────────────────────────────
+
+model User {
+  id                    String    @id @default(cuid())
+  name                  String?
+  email                 String    @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  isPro                 Boolean   @default(false)
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  reports               Report[]
+  accounts              Account[]
+  sessions              Session[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Report {
+  id                  String           @id @default(cuid())
+  title               String?
+  fileUrl             String?
+  rawText             String?
+  overallStatus       String           // normal | borderline | flagged
+  normalCount         Int              @default(0)
+  borderlineCount     Int              @default(0)
+  flaggedCount        Int              @default(0)
+  aiSummary           String?
+  otcRecommendations  Json?            // String[] — OTC/lifestyle suggestions
+  uploadedBy          String
+  user                User             @relation(fields: [uploadedBy], references: [id])
+  results             LabResult[]
+  recommendations     Recommendation[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([uploadedBy])
+}
+
+model LabResult {
+  id              String   @id @default(cuid())
+  testName        String
+  value           String
+  unit            String?
+  referenceRange  String?
+  status          String   // normal | borderline | high | low | flagged
+  explanation     String?
+  reportId        String
+  report          Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@index([reportId])
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  priority    String   // info | warning | urgent
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([reportId])
+}
+
+// ─── NextAuth v5 Models ───────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

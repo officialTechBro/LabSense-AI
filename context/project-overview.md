@@ -156,16 +156,22 @@ model User {
 }
 
 model Report {
-  id          String      @id @default(cuid())
-  title       String?
-  fileUrl     String?
-  rawText     String?
-  summary     String?
-  uploadedBy  String
-  user        User        @relation(fields: [uploadedBy], references: [id])
-  results     LabResult[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id               String           @id @default(cuid())
+  title            String?
+  fileUrl          String?
+  rawText          String?
+  overallStatus    String           // normal | borderline | flagged
+  normalCount      Int              @default(0)
+  borderlineCount  Int              @default(0)
+  flaggedCount     Int              @default(0)
+  aiSummary        String?
+  otcRecommendations Json?          // String[] — OTC/lifestyle suggestions
+  uploadedBy       String
+  user             User             @relation(fields: [uploadedBy], references: [id])
+  results          LabResult[]
+  recommendations  Recommendation[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }
 
 model LabResult {
@@ -174,12 +180,21 @@ model LabResult {
   value            String
   unit             String?
   referenceRange   String?
-  status           String   // normal | low | high | critical
+  status           String   // normal | borderline | high | low | flagged
   explanation      String?
-  recommendation   String?
   reportId         String
   report           Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
+}
+
+model Recommendation {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  priority    String   // info | warning | urgent
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 }
 ```
 
