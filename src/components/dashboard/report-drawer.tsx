@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { X, Download, Printer, ChevronDown } from "lucide-react";
-import { Report } from "@/lib/mock-data";
+import { ReportData } from "@/lib/db/reports";
 
 type Props = {
-  report: Report | null;
+  report: ReportData | null;
   onClose: () => void;
 };
 

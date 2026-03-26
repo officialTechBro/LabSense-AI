@@ -1,10 +1,12 @@
-import { mockReports } from "@/lib/mock-data";
+import { getReports } from "@/lib/db/reports";
 import { ReportsInteractive } from "@/components/dashboard/reports-interactive";
 
-export default function ReportsPage() {
-  const total = mockReports.length;
-  const flagged = mockReports.filter((r) => r.overallStatus === "flagged").length;
-  const borderline = mockReports.filter((r) => r.overallStatus === "borderline").length;
+export default async function ReportsPage() {
+  const reports = await getReports();
+
+  const total = reports.length;
+  const flagged = reports.filter((r) => r.overallStatus === "flagged").length;
+  const borderline = reports.filter((r) => r.overallStatus === "borderline").length;
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -19,7 +21,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Reports grid */}
-      <ReportsInteractive />
+      <ReportsInteractive reports={reports} />
     </div>
   );
 }

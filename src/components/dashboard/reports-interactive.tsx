@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { mockReports, Report } from "@/lib/mock-data";
+import { type ReportData } from "@/lib/db/reports";
 import ReportDrawer from "./report-drawer";
 
 const reportStatusClass: Record<string, string> = {
@@ -16,7 +16,7 @@ const reportStatusLabel: Record<string, string> = {
   flagged: "Flagged",
 };
 
-function ReportCard({ report, onView }: { report: Report; onView: (r: Report) => void }) {
+function ReportCard({ report, onView }: { report: ReportData; onView: (r: ReportData) => void }) {
   return (
     <div
       onClick={() => onView(report)}
@@ -62,13 +62,17 @@ function ReportCard({ report, onView }: { report: Report; onView: (r: Report) =>
   );
 }
 
-export function ReportsInteractive() {
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+type Props = {
+  reports: ReportData[];
+};
+
+export function ReportsInteractive({ reports }: Props) {
+  const [selectedReport, setSelectedReport] = useState<ReportData | null>(null);
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockReports.map((report) => (
+        {reports.map((report) => (
           <ReportCard key={report.id} report={report} onView={setSelectedReport} />
         ))}
       </div>
