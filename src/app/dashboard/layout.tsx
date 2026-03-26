@@ -1,9 +1,28 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import {
+  getRecentReports,
+  getTopRecommendations,
+  getDemoUser,
+} from "@/lib/db/dashboard";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  const [recentReports, topRecommendations, user] = await Promise.all([
+    getRecentReports(),
+    getTopRecommendations(),
+    getDemoUser(),
+  ]);
+
+  return (
+    <DashboardShell
+      recentReports={recentReports}
+      topRecommendations={topRecommendations}
+      user={user}
+    >
+      {children}
+    </DashboardShell>
+  );
 }
