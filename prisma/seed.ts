@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 
@@ -12,31 +13,35 @@ async function main() {
 
   // ─── User ──────────────────────────────────────────────────────────────────
 
+  const hashedPassword = await bcrypt.hash("12345678", 12);
+
   const user = await prisma.user.upsert({
-    where: { email: "john.doe@labsense.ai" },
+    where: { email: "demo@labsense.ai" },
     update: {},
     create: {
-      name: "John Doe",
-      email: "john.doe@labsense.ai",
+      name: "Demo User",
+      email: "demo@labsense.ai",
+      password: hashedPassword,
       isPro: false,
+      emailVerified: new Date(),
     },
   });
   console.log("✓ User:", user.email);
 
-  // ─── Report 1 — Annual Physical ────────────────────────────────────────────
+  // ─── Report 1 — Annual Physical - 2025 ─────────────────────────────────────
 
   const report1 = await prisma.report.upsert({
     where: { id: "seed_report_1" },
-    update: {},
+    update: { uploadedBy: user.id },
     create: {
       id: "seed_report_1",
       title: "Annual Physical - 2025",
-      overallStatus: "borderline",
+      overallStatus: "normal",
       normalCount: 10,
       borderlineCount: 1,
       flaggedCount: 1,
       aiSummary:
-        "Most of your results are within normal range. Your cholesterol is slightly elevated and your fasting glucose is above the recommended threshold — both worth discussing with your doctor.",
+        "Most results are within normal range. However, glucose levels are slightly elevated and vitamin D is below optimal levels. No urgent concerns but monitoring is recommended.",
       otcRecommendations: [
         "Consider a Vitamin D3 supplement (1,000–2,000 IU/day) to address low Vitamin D levels.",
         "Reduce saturated fat intake to help lower LDL cholesterol.",
@@ -54,7 +59,8 @@ async function main() {
             unit: "M/uL",
             referenceRange: "4.5 – 5.5 M/uL",
             status: "normal",
-            explanation: "Your red blood cell count is within the healthy range, indicating good oxygen-carrying capacity.",
+            explanation:
+              "This value is within the normal range and indicates healthy oxygen-carrying capacity.",
           },
           {
             testName: "Hemoglobin",
@@ -62,7 +68,8 @@ async function main() {
             unit: "g/dL",
             referenceRange: "13.5 – 17.5 g/dL",
             status: "normal",
-            explanation: "Hemoglobin levels are normal, suggesting no signs of anemia.",
+            explanation:
+              "Hemoglobin levels are normal, suggesting no signs of anemia.",
           },
           {
             testName: "Cholesterol Total",
@@ -77,8 +84,18 @@ async function main() {
             value: "102",
             unit: "mg/dL",
             referenceRange: "70 – 99 mg/dL",
-            status: "high",
-            explanation: "Fasting glucose is slightly above the normal range, which may indicate early insulin resistance or prediabetes.",
+            status: "borderline",
+            explanation:
+              "Fasting glucose is slightly above the normal range. This may indicate early insulin resistance and warrants monitoring.",
+          },
+          {
+            testName: "Vitamin D",
+            value: "28",
+            unit: "ng/mL",
+            referenceRange: "30 – 100 ng/mL",
+            status: "low",
+            explanation:
+              "Vitamin D is below the recommended range. This is common and can affect bone health and immune function.",
           },
           {
             testName: "TSH",
@@ -86,15 +103,17 @@ async function main() {
             unit: "mIU/L",
             referenceRange: "0.4 – 4.0 mIU/L",
             status: "normal",
-            explanation: "Thyroid-stimulating hormone is normal, indicating healthy thyroid function.",
+            explanation:
+              "Thyroid-stimulating hormone is normal, indicating healthy thyroid function.",
           },
           {
             testName: "Calcium",
             value: "8.6",
             unit: "mg/dL",
-            referenceRange: "8.5 – 10.5 mg/dL",
+            referenceRange: "8.5 – 10.2 mg/dL",
             status: "normal",
-            explanation: "Calcium levels are within the normal range, supporting healthy bones and nerve function.",
+            explanation:
+              "Calcium levels are within the normal range, supporting healthy bones and nerve function.",
           },
           {
             testName: "Potassium",
@@ -102,15 +121,8 @@ async function main() {
             unit: "mEq/L",
             referenceRange: "3.5 – 5.0 mEq/L",
             status: "normal",
-            explanation: "Potassium is normal, indicating proper muscle and heart function.",
-          },
-          {
-            testName: "Vitamin D",
-            value: "18",
-            unit: "ng/mL",
-            referenceRange: "20 – 50 ng/mL",
-            status: "low",
-            explanation: "Vitamin D is below the recommended range. This is common and can affect bone health and immune function.",
+            explanation:
+              "Potassium is normal, indicating proper muscle and heart function.",
           },
           {
             testName: "LDL Cholesterol",
@@ -118,7 +130,8 @@ async function main() {
             unit: "mg/dL",
             referenceRange: "< 100 mg/dL",
             status: "borderline",
-            explanation: "LDL (bad) cholesterol is above the optimal level. Dietary changes and increased activity may help.",
+            explanation:
+              "LDL (bad) cholesterol is above the optimal level. Dietary changes and increased activity may help.",
           },
           {
             testName: "HDL Cholesterol",
@@ -126,7 +139,17 @@ async function main() {
             unit: "mg/dL",
             referenceRange: "> 40 mg/dL",
             status: "normal",
-            explanation: "HDL (good) cholesterol is within the acceptable range.",
+            explanation:
+              "HDL (good) cholesterol is within the acceptable range.",
+          },
+          {
+            testName: "Platelet Count",
+            value: "230",
+            unit: "K/uL",
+            referenceRange: "150 – 400 K/uL",
+            status: "normal",
+            explanation:
+              "Platelet count is normal, indicating healthy blood clotting function.",
           },
           {
             testName: "Triglycerides",
@@ -136,34 +159,26 @@ async function main() {
             status: "normal",
             explanation: "Triglycerides are just within the normal range.",
           },
-          {
-            testName: "Platelet Count",
-            value: "230",
-            unit: "K/uL",
-            referenceRange: "150 – 400 K/uL",
-            status: "normal",
-            explanation: "Platelet count is normal, indicating healthy blood clotting function.",
-          },
         ],
       },
       recommendations: {
         create: [
           {
-            title: "Elevated Fasting Glucose",
+            title: "Cholesterol Trending Up",
             description:
-              "Your fasting glucose of 102 mg/dL is above the normal threshold. Consider discussing dietary changes and a follow-up glucose test with your doctor.",
+              "Your LDL cholesterol has been increasing over the past few months. Consider dietary adjustments and consult your doctor if this trend continues.",
             priority: "warning",
           },
           {
-            title: "LDL Cholesterol Borderline",
+            title: "Vitamin D Level Low",
             description:
-              "LDL at 128 mg/dL exceeds the recommended level. A heart-healthy diet low in saturated fats may help reduce this over time.",
+              "Your vitamin D is below the recommended range. Increasing sun exposure or supplementation may help.",
             priority: "warning",
           },
           {
-            title: "Low Vitamin D",
+            title: "Schedule Follow-up",
             description:
-              "Your Vitamin D level of 18 ng/mL is below the recommended range. Sun exposure and supplementation are commonly suggested.",
+              "Based on your glucose levels, consider repeating this test in 3 months.",
             priority: "info",
           },
         ],
@@ -176,7 +191,7 @@ async function main() {
 
   const report2 = await prisma.report.upsert({
     where: { id: "seed_report_2" },
-    update: {},
+    update: { uploadedBy: user.id },
     create: {
       id: "seed_report_2",
       title: "Blood Work - Follow-up",
@@ -185,7 +200,7 @@ async function main() {
       borderlineCount: 2,
       flaggedCount: 0,
       aiSummary:
-        "Follow-up results show some borderline values. Your LDL and fasting glucose remain slightly elevated. No urgent concerns, but continued monitoring is recommended.",
+        "Some values are slightly outside the optimal range. This may indicate early-stage imbalances that should be monitored.",
       otcRecommendations: [
         "Increase dietary fiber (oats, beans, flaxseed) to help reduce LDL over time.",
         "Consider omega-3 fish oil supplements to support cardiovascular health.",
@@ -202,7 +217,8 @@ async function main() {
             unit: "mg/dL",
             referenceRange: "< 100 mg/dL",
             status: "borderline",
-            explanation: "LDL has increased slightly since your last report.",
+            explanation:
+              "LDL has increased slightly since your last report and remains above the optimal level.",
           },
           {
             testName: "HDL Cholesterol",
@@ -218,7 +234,8 @@ async function main() {
             unit: "mg/dL",
             referenceRange: "70 – 99 mg/dL",
             status: "borderline",
-            explanation: "Fasting glucose remains above normal. Continued monitoring is advised.",
+            explanation:
+              "Fasting glucose remains above normal. Continued monitoring is advised.",
           },
           {
             testName: "Triglycerides",
@@ -276,6 +293,12 @@ async function main() {
               "Fasting glucose at 105 mg/dL remains above normal. Regular home monitoring and reduced sugar intake are advised.",
             priority: "info",
           },
+          {
+            title: "Follow-up Recommended",
+            description:
+              "Given the borderline values, scheduling a follow-up blood panel in 6–8 weeks is a reasonable next step.",
+            priority: "info",
+          },
         ],
       },
     },
@@ -286,7 +309,7 @@ async function main() {
 
   const report3 = await prisma.report.upsert({
     where: { id: "seed_report_3" },
-    update: {},
+    update: { uploadedBy: user.id },
     create: {
       id: "seed_report_3",
       title: "Liver Function Panel",
@@ -295,7 +318,7 @@ async function main() {
       borderlineCount: 0,
       flaggedCount: 0,
       aiSummary:
-        "All liver function markers are within normal range. No concerns detected. Routine monitoring is sufficient.",
+        "All liver function markers are within normal range. No concerns identified.",
       otcRecommendations: [
         "Stay well hydrated — aim for 8 glasses of water daily to support liver function.",
         "Limit alcohol consumption to maintain healthy liver enzyme levels.",
@@ -311,7 +334,8 @@ async function main() {
             unit: "U/L",
             referenceRange: "7 – 56 U/L",
             status: "normal",
-            explanation: "Alanine aminotransferase is normal, indicating no signs of liver stress.",
+            explanation:
+              "Alanine aminotransferase is normal, indicating no signs of liver stress.",
           },
           {
             testName: "AST",
@@ -319,7 +343,8 @@ async function main() {
             unit: "U/L",
             referenceRange: "10 – 40 U/L",
             status: "normal",
-            explanation: "Aspartate aminotransferase is within the healthy range.",
+            explanation:
+              "Aspartate aminotransferase is within the healthy range.",
           },
           {
             testName: "Alkaline Phosphatase",
@@ -335,7 +360,8 @@ async function main() {
             unit: "mg/dL",
             referenceRange: "0.1 – 1.2 mg/dL",
             status: "normal",
-            explanation: "Bilirubin is within range, suggesting healthy liver processing.",
+            explanation:
+              "Bilirubin is within range, suggesting healthy liver processing.",
           },
           {
             testName: "Albumin",
@@ -343,7 +369,8 @@ async function main() {
             unit: "g/dL",
             referenceRange: "3.5 – 5.0 g/dL",
             status: "normal",
-            explanation: "Albumin is normal, reflecting good liver protein production.",
+            explanation:
+              "Albumin is normal, reflecting good liver protein production.",
           },
           {
             testName: "Total Protein",

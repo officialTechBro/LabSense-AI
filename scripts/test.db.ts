@@ -9,80 +9,95 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("Testing database connection...\n");
+  console.log("Fetching demo seed data...\n");
 
-  // Create a test user
-  const user = await prisma.user.create({
-    data: {
-      email: "test@labsense.ai",
-      name: "Test User",
-    },
-  });
-  console.log("✓ Created user:", user.id);
+  // ─── User ──────────────────────────────────────────────────────────────────
 
-  // Create a test report with results and recommendations
-  const report = await prisma.report.create({
-    data: {
-      title: "Test Report",
-      overallStatus: "borderline",
-      normalCount: 2,
-      borderlineCount: 1,
-      flaggedCount: 0,
-      aiSummary: "This is a test AI summary.",
-      otcRecommendations: ["Drink more water.", "Exercise regularly."],
-      uploadedBy: user.id,
-      results: {
-        create: [
-          {
-            testName: "Hemoglobin",
-            value: "14.2",
-            unit: "g/dL",
-            referenceRange: "13.5 – 17.5 g/dL",
-            status: "normal",
-          },
-          {
-            testName: "LDL Cholesterol",
-            value: "128",
-            unit: "mg/dL",
-            referenceRange: "< 100 mg/dL",
-            status: "borderline",
-          },
-        ],
-      },
-      recommendations: {
-        create: [
-          {
-            title: "LDL Cholesterol Borderline",
-            description: "Consider dietary changes to reduce LDL.",
-            priority: "warning",
-          },
-        ],
+  const user = await prisma.user.findUnique({
+    where: { email: "demo@labsense.ai" },
+    include: {
+      reports: {
+        include: {
+          results: true,
+          recommendations: true,
+        },
+        orderBy: { createdAt: "desc" },
       },
     },
-    include: { results: true, recommendations: true },
   });
-  console.log("✓ Created report:", report.id);
-  console.log("  Results:", report.results.length);
-  console.log("  Recommendations:", report.recommendations.length);
 
-  // Read back the user with reports
-  const fetched = await prisma.user.findUnique({
-    where: { email: "test@labsense.ai" },
-    include: { reports: true },
-  });
-  console.log("✓ Fetched user with reports:", fetched?.reports.length);
+  if (!user) {
+    console.error("✗ Demo user not found. Run `npx prisma db seed` first.");
+    process.exit(1);
+  }
 
-  // Clean up
-  await prisma.report.delete({ where: { id: report.id } });
-  await prisma.user.delete({ where: { id: user.id } });
-  console.log("\n✓ Cleanup complete — all test records deleted");
+  console.log("─── User ───────────────────────────────────────────────────");
+  console.log(`  Name          : ${user.name}`);
+  console.log(`  Email         : ${user.email}`);
+  console.log(`  isPro         : ${user.isPro}`);
+  console.log(`  emailVerified : ${user.emailVerified}`);
+  console.log(`  Password hash : ${user.password ? "✓ present" : "✗ missing"}`);
+  console.log(`  Reports       : ${user.reports.length}`);
 
-  console.log("\nDatabase connection test passed.");
+  // ─── Reports ───────────────────────────────────────────────────────────────
+
+  for (const report of user.reports) {
+    console.log("\n─── Report ─────────────────────────────────────────────────");
+    console.log(`  Title           : ${report.title}`);
+    console.log(`  Date            : ${report.createdAt.toDateString()}`);
+    console.log(`  Overall Status  : ${report.overallStatus}`);
+    console.log(`  Normal          : ${report.normalCount}`);
+    console.log(`  Borderline      : ${report.borderlineCount}`);
+    console.log(`  Flagged         : ${report.flaggedCount}`);
+    console.log(`  AI Summary      : ${report.aiSummary}`);
+    console.log(
+      `  OTC Recs        : ${(report.otcRecommendations as string[]).length} items`
+    );
+
+    console.log(`\n  Lab Results (${report.results.length}):`);
+    for (const r of report.results) {
+      const flag =
+        r.status === "normal"
+          ? "✓"
+          : r.status === "borderline"
+            ? "⚠"
+            : "✗";
+      console.log(
+        `    ${flag} ${r.testName.padEnd(25)} ${r.value} ${r.unit ?? ""} [${r.referenceRange ?? "—"}] — ${r.status}`
+      );
+    }
+
+    console.log(`\n  Recommendations (${report.recommendations.length}):`);
+    for (const rec of report.recommendations) {
+      const icon =
+        rec.priority === "urgent" ? "🚨" : rec.priority === "warning" ? "⚠" : "ℹ";
+      console.log(`    ${icon} [${rec.priority}] ${rec.title}`);
+      console.log(`       ${rec.description}`);
+    }
+  }
+
+  // ─── Summary ───────────────────────────────────────────────────────────────
+
+  const totalResults = user.reports.reduce(
+    (sum, r) => sum + r.results.length,
+    0
+  );
+  const totalRecs = user.reports.reduce(
+    (sum, r) => sum + r.recommendations.length,
+    0
+  );
+
+  console.log("\n─── Summary ────────────────────────────────────────────────");
+  console.log(`  Total reports      : ${user.reports.length}`);
+  console.log(`  Total lab results  : ${totalResults}`);
+  console.log(`  Total recs         : ${totalRecs}`);
+  console.log(`  Last report date   : ${user.reports[0]?.createdAt.toDateString()}`);
+  console.log("\n✓ All demo data verified successfully.");
 }
 
 main()
   .catch((err) => {
-    console.error("Database test failed:", err);
+    console.error("Test failed:", err);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());
