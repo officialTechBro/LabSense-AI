@@ -21,7 +21,7 @@ export default async function ReportsPage() {
       </div>
 
       {/* Reports grid */}
-      <ReportsInteractive reports={reports} />
+      <ReportsInteractive reports={reports} mode="navigate" />
     </div>
   );
 }

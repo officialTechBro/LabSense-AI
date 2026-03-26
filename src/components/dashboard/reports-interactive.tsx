@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { type ReportData } from "@/lib/db/reports";
 import ReportDrawer from "./report-drawer";
 
@@ -16,7 +17,13 @@ const reportStatusLabel: Record<string, string> = {
   flagged: "Flagged",
 };
 
-function ReportCard({ report, onView }: { report: ReportData; onView: (r: ReportData) => void }) {
+function ReportCard({
+  report,
+  onView,
+}: {
+  report: ReportData;
+  onView: (r: ReportData) => void;
+}) {
   return (
     <div
       onClick={() => onView(report)}
@@ -64,19 +71,31 @@ function ReportCard({ report, onView }: { report: ReportData; onView: (r: Report
 
 type Props = {
   reports: ReportData[];
+  mode?: "drawer" | "navigate";
 };
 
-export function ReportsInteractive({ reports }: Props) {
+export function ReportsInteractive({ reports, mode = "drawer" }: Props) {
   const [selectedReport, setSelectedReport] = useState<ReportData | null>(null);
+  const router = useRouter();
+
+  function handleView(report: ReportData) {
+    if (mode === "navigate") {
+      router.push(`/dashboard/reports/${report.id}`);
+    } else {
+      setSelectedReport(report);
+    }
+  }
 
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reports.map((report) => (
-          <ReportCard key={report.id} report={report} onView={setSelectedReport} />
+          <ReportCard key={report.id} report={report} onView={handleView} />
         ))}
       </div>
-      <ReportDrawer report={selectedReport} onClose={() => setSelectedReport(null)} />
+      {mode === "drawer" && (
+        <ReportDrawer report={selectedReport} onClose={() => setSelectedReport(null)} />
+      )}
     </>
   );
 }

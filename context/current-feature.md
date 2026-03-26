@@ -6,7 +6,7 @@ Completed
 
 ## Goals
 
-Replace dummy stats and sidebar data with real database-driven content while preserving the current dashboard UI/UX.
+Add individual report detail pages with comprehensive AI summary, and update drawer to show brief summary with a "View Full Report" button.
 
 - Create `src/lib/db/dashboard.ts` with query functions: `getUserDashboardStats`, `getRecentReports`, `getLatestHealthMetrics`, `getTopRecommendations`
 - Replace Top Summary Cards (Total Reports, Overall Health Status, Items to Review, Last Report Date) with real user-scoped data
@@ -37,3 +37,4 @@ Replace dummy stats and sidebar data with real database-driven content while pre
 - Seed data completed: demo@labsense.ai user with bcryptjs-hashed password; 3 reports (Annual Physical, Blood Work Follow-up, Liver Function Panel) with 26 lab results and 7 recommendations; bcryptjs + tsx installed; prisma.config.ts seed command configured; test.db.ts updated to verify seed output
 - Dashboard data integration completed: replaced all mock data with real Prisma/Neon DB queries; src/lib/db/reports.ts with shared types and 4 query functions; dashboard and reports pages converted to async server components; all client components (LabTrendCharts, ReportsInteractive, ReportDrawer, HealthMetricsCard) updated to accept data via props
 - Stats & sidebar data integration completed: created src/lib/db/dashboard.ts with getRecentReports, getLatestHealthMetrics, getTopRecommendations, getDemoUser; dashboard layout converted to async server component to fetch sidebar data; DashboardShell and DashboardSidebar updated to accept and render real user profile (name, email, initials), recent reports list with status indicators, and top recommendations preview; mockUser import removed from sidebar
+- Report detail page completed: added getReportById query; new /dashboard/reports/[id] page with full lab results, comprehensive AI summary, OTC suggestions, and prioritized recommendations; ReportsInteractive updated with mode prop (drawer vs navigate); Reports page uses navigate mode; ReportDrawer updated with truncated summary and "View Full Report" button linking to detail page

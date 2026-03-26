@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Download, Printer, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { X, Download, Printer, ArrowRight } from "lucide-react";
 import { ReportData } from "@/lib/db/reports";
 
 type Props = {
@@ -25,8 +25,21 @@ const statusClass: Record<string, string> = {
   flagged: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
 };
 
+function truncateSummary(text: string, maxLen = 160): string {
+  if (text.length <= maxLen) return text;
+  const trimmed = text.slice(0, maxLen);
+  const lastSpace = trimmed.lastIndexOf(" ");
+  return (lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed) + "…";
+}
+
 export default function ReportDrawer({ report, onClose }: Props) {
-  const [otcOpen, setOtcOpen] = useState(false);
+  const router = useRouter();
+
+  function handleViewFull() {
+    if (!report) return;
+    onClose();
+    router.push(`/dashboard/reports/${report.id}`);
+  }
 
   return (
     <>
@@ -77,37 +90,13 @@ export default function ReportDrawer({ report, onClose }: Props) {
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">
-          {/* AI Summary */}
+          {/* AI Summary — brief */}
           {report?.aiSummary && (
             <div className="px-6 py-4 border-b border-border">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">AI Summary</p>
-              <p className="text-sm text-foreground leading-relaxed">{report.aiSummary}</p>
-
-              {/* OTC Recommendations — collapsible */}
-              {report.otcRecommendations?.length > 0 && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => setOtcOpen((o) => !o)}
-                    className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
-                  >
-                    <ChevronDown
-                      size={14}
-                      className={`transition-transform duration-200 ${otcOpen ? "rotate-180" : ""}`}
-                    />
-                    {otcOpen ? "Hide" : "Show"} OTC Recommendations
-                  </button>
-                  {otcOpen && (
-                    <ul className="mt-2 space-y-1.5">
-                      {report.otcRecommendations.map((rec, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <span className="mt-1.5 size-1.5 rounded-full bg-emerald-500 shrink-0" />
-                          {rec}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
+              <p className="text-sm text-foreground leading-relaxed">
+                {truncateSummary(report.aiSummary)}
+              </p>
             </div>
           )}
 
@@ -134,7 +123,14 @@ export default function ReportDrawer({ report, onClose }: Props) {
 
         {/* Actions */}
         <div className="px-6 py-4 border-t border-border space-y-2">
-          <button className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 transition-colors">
+          <button
+            onClick={handleViewFull}
+            className="w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 transition-colors"
+          >
+            View Full Report
+            <ArrowRight size={16} />
+          </button>
+          <button className="w-full flex items-center justify-center gap-2 rounded-lg border border-border hover:bg-muted text-foreground text-sm font-medium px-4 py-2.5 transition-colors">
             <Download size={16} />
             Download PDF
           </button>

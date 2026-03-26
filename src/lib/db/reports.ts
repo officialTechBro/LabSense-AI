@@ -195,6 +195,45 @@ export async function getHealthMetrics(): Promise<HealthMetric[]> {
   return metrics;
 }
 
+export async function getReportById(id: string): Promise<ReportData | null> {
+  const r = await prisma.report.findUnique({
+    where: { id },
+    include: { results: true, recommendations: true },
+  });
+
+  if (!r) return null;
+
+  return {
+    id: r.id,
+    title: r.title ?? "Untitled Report",
+    date: formatDate(r.createdAt),
+    overallStatus: r.overallStatus as ReportData["overallStatus"],
+    normalCount: r.normalCount,
+    borderlineCount: r.borderlineCount,
+    flaggedCount: r.flaggedCount,
+    aiSummary: r.aiSummary,
+    otcRecommendations: Array.isArray(r.otcRecommendations)
+      ? (r.otcRecommendations as string[])
+      : [],
+    aiRecommendations: r.recommendations
+      .sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 3) - (PRIORITY_ORDER[b.priority] ?? 3))
+      .map((rec) => ({
+        id: rec.id,
+        title: rec.title,
+        description: rec.description,
+        priority: rec.priority as RecommendationData["priority"],
+      })),
+    results: r.results.map((res) => ({
+      id: res.id,
+      testName: res.testName,
+      value: res.value,
+      unit: res.unit,
+      referenceRange: res.referenceRange,
+      status: res.status as LabResultStatus,
+    })),
+  };
+}
+
 export async function getRecommendations(): Promise<RecommendationData[]> {
   const recs = await prisma.recommendation.findMany({
     orderBy: { createdAt: "desc" },
