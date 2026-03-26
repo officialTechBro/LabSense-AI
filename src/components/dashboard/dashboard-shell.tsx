@@ -3,8 +3,25 @@
 import { useState } from "react";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardHeader } from "./dashboard-header";
+import type {
+  SidebarReportData,
+  SidebarRecommendation,
+  SidebarUserData,
+} from "@/lib/db/dashboard";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+interface DashboardShellProps {
+  children: React.ReactNode;
+  recentReports: SidebarReportData[];
+  topRecommendations: SidebarRecommendation[];
+  user: SidebarUserData | null;
+}
+
+export function DashboardShell({
+  children,
+  recentReports,
+  topRecommendations,
+  user,
+}: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -14,6 +31,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         isCollapsed={isCollapsed}
         isMobileOpen={isMobileOpen}
         onMobileClose={() => setIsMobileOpen(false)}
+        recentReports={recentReports}
+        topRecommendations={topRecommendations}
+        user={user}
       />
       <div className="flex flex-1 flex-col overflow-hidden">
         <DashboardHeader
