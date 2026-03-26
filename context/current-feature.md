@@ -2,11 +2,27 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
+Replace all mock/static data in the main dashboard with real database-driven data while keeping the UI unchanged.
+
+- Create `src/lib/db/reports.ts` for all dashboard-related Prisma queries
+- Replace Top Summary Cards (Total Reports, Overall Status, Items to Review, Last Report Date)
+- Replace Health Metrics Panel (Blood Pressure, Heart Rate, BMI, Glucose) from most recent report
+- Replace Cholesterol Trend Chart with historical data across reports
+- Replace Recent Reports cards with real report data (title, date, status, counts)
+- Replace Recommendations section from `Recommendation` table (sorted by priority and recency)
+- Wire up Report Drawer to fetch full report details (lab results, ranges, statuses, units)
+
 ## Notes
+
+- All data fetched in server components — no client-side fetching for core data
+- All queries scoped to the logged-in user via NextAuth session
+- Handle empty/null states gracefully (null-safe display)
+- Do NOT change UI layout or introduce new visual elements
+- Spec: `context/features/dashboard-data-spec.md`
 
 ## History
 

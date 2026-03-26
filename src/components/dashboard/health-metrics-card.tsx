@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { LabResult, LabResultStatus } from "@/lib/mock-data";
+import { type LabResultData as LabResult, LabResultStatus } from "@/lib/db/reports";
 
 const statusClass: Record<LabResultStatus, string> = {
   normal: "text-emerald-600 dark:text-emerald-400",

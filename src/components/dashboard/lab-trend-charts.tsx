@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { mockReports } from "@/lib/mock-data";
+import { type ReportData } from "@/lib/db/reports";
 
 type ChartGroup = {
   title: string;
@@ -28,13 +28,8 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-// Sort reports oldest → newest
-const sortedReports = [...mockReports].sort(
-  (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-);
-
-function buildChartData(tests: string[]) {
-  return sortedReports.map((report) => {
+function buildChartData(reports: ReportData[], tests: string[]) {
+  return reports.map((report) => {
     const point: Record<string, string | number> = { date: formatDate(report.date) };
     for (const testName of tests) {
       const result = report.results.find((r) => r.testName === testName);
@@ -51,10 +46,11 @@ function hasEnoughData(data: Record<string, string | number>[], tests: string[])
 
 type TrendChartProps = {
   group: ChartGroup;
+  reports: ReportData[];
 };
 
-function TrendChart({ group }: TrendChartProps) {
-  const data = buildChartData(group.tests);
+function TrendChart({ group, reports }: TrendChartProps) {
+  const data = buildChartData(reports, group.tests);
   const hasData = hasEnoughData(data, group.tests);
 
   return (
@@ -110,11 +106,19 @@ function TrendChart({ group }: TrendChartProps) {
   );
 }
 
-export function LabTrendCharts() {
+type Props = {
+  reports: ReportData[];
+};
+
+export function LabTrendCharts({ reports }: Props) {
+  const sorted = [...reports].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {chartGroups.map((group) => (
-        <TrendChart key={group.title} group={group} />
+        <TrendChart key={group.title} group={group} reports={sorted} />
       ))}
     </div>
   );

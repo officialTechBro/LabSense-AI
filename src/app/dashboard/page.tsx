@@ -8,9 +8,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import {
-  mockDashboardStats,
-  mockReports,
-} from "@/lib/mock-data";
+  getDashboardStats,
+  getHealthMetrics,
+  getRecommendations,
+  getReports,
+  type RecommendationData,
+} from "@/lib/db/reports";
 import { LabTrendCharts } from "@/components/dashboard/lab-trend-charts";
 import { ReportsInteractive } from "@/components/dashboard/reports-interactive";
 import { HealthMetricsCard } from "@/components/dashboard/health-metrics-card";
@@ -26,27 +29,6 @@ const recBorder = {
   info: "border-l-blue-400",
   urgent: "border-l-red-400",
 };
-
-
-const keyMetrics = [
-  "LDL Cholesterol",
-  "HDL Cholesterol",
-  "Glucose (Fasting)",
-  "Triglycerides",
-  "Hemoglobin",
-  "TSH",
-];
-
-function getLatestResult(testName: string) {
-  const sorted = [...mockReports].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-  for (const report of sorted) {
-    const result = report.results.find((r) => r.testName === testName);
-    if (result) return result;
-  }
-  return null;
-}
 
 function SummaryCard({
   icon,
@@ -73,12 +55,27 @@ function SummaryCard({
   );
 }
 
-export default function DashboardPage() {
-  const stats = mockDashboardStats;
-  const recommendations = mockReports.flatMap((r) => r.aiRecommendations);
-  const metrics = keyMetrics
-    .map((name) => ({ name, result: getLatestResult(name) }))
-    .filter((m): m is { name: string; result: NonNullable<ReturnType<typeof getLatestResult>> } => m.result !== null);
+function RecommendationItem({ rec }: { rec: RecommendationData }) {
+  return (
+    <div
+      className={`rounded-xl border border-border border-l-4 ${recBorder[rec.priority]} bg-card px-5 py-4 flex gap-3`}
+    >
+      {recIcon[rec.priority]}
+      <div>
+        <p className="text-sm font-semibold text-foreground">{rec.title}</p>
+        <p className="text-sm text-muted-foreground mt-0.5">{rec.description}</p>
+      </div>
+    </div>
+  );
+}
+
+export default async function DashboardPage() {
+  const [stats, metrics, recommendations, reports] = await Promise.all([
+    getDashboardStats(),
+    getHealthMetrics(),
+    getRecommendations(),
+    getReports(),
+  ]);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -117,7 +114,7 @@ export default function DashboardPage() {
       {/* Charts + Health metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <LabTrendCharts />
+          <LabTrendCharts reports={reports} />
         </div>
         <HealthMetricsCard metrics={metrics} />
       </div>
@@ -128,26 +125,21 @@ export default function DashboardPage() {
           <h2 className="font-semibold text-foreground">Recent Reports</h2>
           <button className="text-sm text-emerald-600 hover:underline">View All</button>
         </div>
-        <ReportsInteractive />
+        <ReportsInteractive reports={reports} />
       </div>
 
       {/* Health recommendations */}
       <div>
         <h2 className="font-semibold text-foreground mb-3">Health Recommendations</h2>
-        <div className="space-y-3">
-          {recommendations.map((rec) => (
-            <div
-              key={rec.id}
-              className={`rounded-xl border border-border border-l-4 ${recBorder[rec.priority]} bg-card px-5 py-4 flex gap-3`}
-            >
-              {recIcon[rec.priority]}
-              <div>
-                <p className="text-sm font-semibold text-foreground">{rec.title}</p>
-                <p className="text-sm text-muted-foreground mt-0.5">{rec.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {recommendations.length > 0 ? (
+          <div className="space-y-3">
+            {recommendations.map((rec) => (
+              <RecommendationItem key={rec.id} rec={rec} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No recommendations yet.</p>
+        )}
       </div>
     </div>
   );
