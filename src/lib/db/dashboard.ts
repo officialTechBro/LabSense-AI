@@ -25,6 +25,7 @@ export type SidebarRecommendation = {
 export type SidebarUserData = {
   name: string | null;
   email: string;
+  isPro: boolean;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ export async function getTopRecommendations(userId?: string): Promise<SidebarRec
 
 export async function getDemoUser(): Promise<SidebarUserData | null> {
   const user = await prisma.user.findFirst({
-    select: { name: true, email: true },
+    select: { name: true, email: true, isPro: true },
   });
   return user;
 }

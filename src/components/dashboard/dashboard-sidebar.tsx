@@ -14,6 +14,7 @@ import {
   Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type {
   SidebarReportData,
   SidebarRecommendation,
@@ -186,9 +187,16 @@ function SidebarContent({
         </div>
         {!isCollapsed && (
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">
-              {user?.name ?? user?.email ?? "—"}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-medium text-foreground">
+                {user?.name ?? user?.email ?? "—"}
+              </p>
+              {user?.isPro && (
+                <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 h-auto shrink-0">
+                  PRO
+                </Badge>
+              )}
+            </div>
             <p className="truncate text-xs text-muted-foreground">
               {user?.email ?? ""}
             </p>

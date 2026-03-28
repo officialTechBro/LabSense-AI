@@ -1,28 +1,22 @@
-# Current Feature
+# Current Feature: Add Pro Badge to Sidebar
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-Add individual report detail pages with comprehensive AI summary, and update drawer to show brief summary with a "View Full Report" button.
-
-- Create `src/lib/db/dashboard.ts` with query functions: `getUserDashboardStats`, `getRecentReports`, `getLatestHealthMetrics`, `getTopRecommendations`
-- Replace Top Summary Cards (Total Reports, Overall Health Status, Items to Review, Last Report Date) with real user-scoped data
-- Update sidebar Recent Reports section: title, status indicator, date — clicking opens report details
-- Update sidebar User Profile section with authenticated user name, email, and avatar (initials fallback) from NextAuth session
-- Display latest Health Metrics (Blood Pressure, Heart Rate, BMI, Glucose) from most recent report with status color highlighting
-- Show top 2–3 Recommendations preview with title and priority
+- Add a "PRO" badge using the ShadCN Badge component next to the user name in the sidebar footer
+- Badge should be clean, subtle, and consistent with the LabSense medical-style interface
+- Display "PRO" in all uppercase
+- Only show the badge on the user name in the sidebar footer
+- Preserve existing sidebar layout and spacing
 
 ## Notes
 
-- Do NOT change layout or styling
-- Use server-side data fetching only — no mock data
-- All data scoped to the logged-in user via NextAuth session
-- Handle empty states (no reports yet) gracefully
-- Status colors must match existing UI (green, yellow, red)
-- Spec: `context/features/stats-sidebar-spec.md`
+- Use the ShadCN UI Badge component
+- Do not change the existing sidebar layout or spacing more than necessary
+- Spec: `context/features/add-pro-badge-sidebar.md`
 
 ## History
 
